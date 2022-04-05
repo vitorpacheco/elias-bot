@@ -1,5 +1,5 @@
-import { Client, Intents } from 'discord.js'
-import express from 'express'
+const { Client, Intents } = require('discord.js')
+const express = require('express')
 
 require('dotenv').config()
 
