@@ -1,7 +1,8 @@
+require('dotenv').config()
 const { Client, Intents } = require('discord.js')
 const express = require('express')
 
-require('dotenv').config()
+const { validateNewPresence, checkUserIsElias } = require('./validations.js')
 
 const app = express()
 const port = process.env.PORT || 3000
@@ -19,6 +20,17 @@ const askElias = (client) => {
   channel.send('tava onde elias?')
 }
 
+
+const checkPresence = (oldPresence, newPresence) => {
+  if (!validateNewPresence(newPresence)) {
+    return
+  }
+
+  if (checkUserIsElias(newPresence)) {
+    askElias(client)
+  }
+}
+
 const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
@@ -31,23 +43,6 @@ client.once('ready', () => {
   console.log(`Ready! Logged in as ${client.user.tag}`)
 })
 
-client.on('presenceUpdate', (oldPresence, newPresence) => {
-  if (newPresence.guild === undefined || newPresence.guild === null) {
-    return
-  }
-
-  if (newPresence.guild.id != process.env.GUILD_ID) {
-    return
-  }
-
-  if (newPresence.status == 'offline') {
-    return
-  }
-
-  if (newPresence.user.username == process.env.BRASH_USERNAME && 
-      newPresence.user.discriminator == process.env.BRASH_DISCRIMINATOR) {
-    askElias(client)
-  }
-})
+client.on('presenceUpdate', (oldPresence, newPresence) => checkPresence(oldPresence, newPresence))
 
 client.login(process.env.DISCORD_TOKEN)
